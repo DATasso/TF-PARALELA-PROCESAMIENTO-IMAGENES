@@ -20,7 +20,8 @@ int main(int argc, char** argv)
     const char* filename;
     Mat input;
     Mat output;
-    int width, height, channels;
+    Mat filasFaltantes;
+    int width, height, channels, cantFaltantes;
     std::string ruta;
     std::string operacion(argv[1]);
 
@@ -47,13 +48,24 @@ int main(int argc, char** argv)
             width = input.cols;
             height = input.rows;
             channels = input.channels();
+            cantFaltantes = (height) - height%procesadores;
             tam = width*height*channels;
             datosPP = height/procesadores * width * channels;
+            if(height%procesadores != 0){
+                    for (int i = cantFaltantes; i<input.rows;i++){
+                    if(i==cantFaltantes){
+                        filasFaltantes = input.row(i).clone();
+                    }
+                    else{
+                        vconcat(filasFaltantes, input.row(i).clone(), filasFaltantes);
+                    }
+                }
+            }
             if(argv[1] == std::string("1") || argv[1] == std::string("2")){
-                output = Mat(height, width, CV_8UC3);
+                output = Mat(height - height%procesadores, width, CV_8UC3);
             }
             else if(argv[1] == std::string("3")){
-                output = Mat(height*2, width*2, CV_8UC3);
+                output = Mat(height*2 - (height%procesadores)*2, width*2, CV_8UC3);
             }
             else{
                 std::cout << "No existe una argv[1] con ese numero." << std::endl;
@@ -76,13 +88,23 @@ int main(int argc, char** argv)
         //Aplicación de cada operación.
         if(argv[1] == std::string("1")){
             GaussianBlur(test, test, Size(15, 15), 0);
+            if(mi_rango == 0 && (height%procesadores != 0)){
+                GaussianBlur(filasFaltantes, filasFaltantes, Size(15, 15), 0);
+            }
         }
         else if(argv[1] == std::string("2")){
             cvtColor(test, test, cv::COLOR_BGR2GRAY);
             cvtColor(test, test, cv::COLOR_GRAY2BGR);
+            if(mi_rango == 0 && (height%procesadores != 0)){
+                cvtColor(filasFaltantes, filasFaltantes, cv::COLOR_BGR2GRAY);
+                cvtColor(filasFaltantes, filasFaltantes, cv::COLOR_GRAY2BGR);
+            }
         }
         else if(argv[1] == std::string("3")){
             resize(test,test,Size(width*2,(height/procesadores)*2));
+            if(mi_rango == 0 && (height%procesadores != 0)){
+                resize(filasFaltantes,filasFaltantes,Size(width*2,(height%procesadores)*2));
+            }
         }
 
         // Se bloquea el proceso hasta que todos los procesos lo ejecuten.
@@ -111,6 +133,11 @@ int main(int argc, char** argv)
             strftime(buffer,sizeof(buffer),"%Y%m%d%H%M%S",timeinfo);
             std::string str(buffer);
             std::string textoSalida = "operacion_" + operacion + "_" + str +".png";
+
+            if(height%procesadores != 0){
+                //vconcat(output, filasFaltantes, output);
+            }
+
             imwrite(textoSalida, output);
         }
         MPI_Finalize();
