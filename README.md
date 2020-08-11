@@ -11,18 +11,13 @@ La implementación debe escoger una imagen en colores y hacer las siguientes act
 2) A partir de la imagen en colores pasar a escala de grises.
 3) Escalar la imagen sin perder calidad.
 
-
-## Autores
-- Daniel Aguilera Tasso
-- Nicolás Andrews Sandoval
-
 ## Entorno de desarrollo y requisitos:
 - Ubuntu 20.04
 - C++.
 - OpenMPI.
 - OpenCV (guía práctica de instalación: https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/)
 
-## Archivos
+### Archivos
 Archivos de Entrada:
 - `algo.cpp` contiene el programa en C++ con MPI y OpenCV,
 - `Fubuki.jpg` imagen de ejemplo.
@@ -53,6 +48,11 @@ time mpirun ./dist/programa numOperacion path
 ```
 
 ### Operaciones:
+Como se mencionó anteriormente, existen 3 operaciones, estas son:
+1) Difuminado Gaussiano.
+2) Grayscale.
+3) Ampliación de la imagén (ancho*2 , alto*2)
+Para utilizar alguna, se escribe el número correspondiente en el argumento para la ejecución (numOperacion)
 
 #### Ejemplos de ejecución Método 1 | Método 2:
 `time mpirun ./algo.o 1 Fubuki.jpg` o `time mpirun ./dist/programa 1 Fubuki.jpg`
@@ -60,3 +60,8 @@ time mpirun ./dist/programa numOperacion path
 `time mpirun ./algo.o 2 Fubuki.jpg` o `time mpirun ./dist/programa 2 Fubuki.jpg`
 
 `time mpirun ./algo.o 3 Fubuki.jpg` o `time mpirun ./dist/programa 3 Fubuki.jpg`
+
+
+## Autores
+- Daniel Aguilera Tasso
+- Nicolás Andrews Sandoval
