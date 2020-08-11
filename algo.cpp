@@ -135,7 +135,7 @@ int main(int argc, char** argv)
             std::string textoSalida = "operacion_" + operacion + "_" + str +".png";
 
             if(height%procesadores != 0){
-                //vconcat(output, filasFaltantes, output);
+                vconcat(output, filasFaltantes, output);
             }
 
             imwrite(textoSalida, output);
