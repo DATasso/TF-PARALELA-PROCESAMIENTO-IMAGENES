@@ -17,12 +17,6 @@ La implementación debe escoger una imagen en colores y hacer las siguientes act
 - OpenMPI. (https://www-lb.open-mpi.org/software/ompi/v4.0/)
 - OpenCV. (https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/)
 
-Instalar OpenCV:
-```
-sudo apt update
-sudo apt install libopencv-dev python3-opencv
-```
-
 ### Archivos
 Archivos de Entrada:
 - `algo.cpp` contiene el programa en C++ con MPI y OpenCV,
