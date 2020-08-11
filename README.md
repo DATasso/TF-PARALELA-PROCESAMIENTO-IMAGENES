@@ -12,7 +12,7 @@ La implementación debe escoger una imagen en colores y hacer las siguientes act
 3) Escalar la imagen sin perder calidad.
 
 ## Entorno de desarrollo y requisitos:
-- Ubuntu 20.04
+- Ubuntu 20.04 LTS de 64 bits.
 - C++.
 - OpenMPI.
 - OpenCV (guía práctica de instalación: https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/)
