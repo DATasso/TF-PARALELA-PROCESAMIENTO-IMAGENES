@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     Mat output; /* Imagen de salida */
     Mat filasFaltantes; /* Imagen para casos especiales de filas faltantes */
     int width, height, channels, cantFaltantes; /* ancho(columnas), altura(filas), canales y cantidad de filas faltantes para casos especiales. */
-    int kxk = 15; /* Valor kernel para difuminado gaussiano */
+    int kyk, kxk; /* Valores kernel para difuminado gaussiano, debe ser impar */
 
     if (argc > 2) {
         std::string ruta; /* string con la ruta del fichero (imagen) */
@@ -75,9 +75,22 @@ int main(int argc, char** argv)
 
             /* Para el caso de la difuminación y escala de grises, la cantidad de datos de salida es igual a la de entrada.
              * Se excluyen las faltantes en la distribución y se agregan al final.
+             * Para el caso de la difuminación, se calcula el tamaño del kernel en en x(width) e y(height);
             */
             if(argv[1] == std::string("1") || argv[1] == std::string("2")){
                 output = Mat(height - height%procesadores, width, CV_8UC3);
+
+                if(argv[1] == std::string("1")){
+                    kxk = width/50;
+                    kyk = height/50;
+                    if (kxk%2==0){
+                        kxk--;
+                    }
+                    if (kyk%2==0){
+                        kyk--;
+                    }
+                    std::cout << "Se utilizo un kernel de: " kxk << "x" << kyk << std::endl;
+                }
             }
 
             /* Para el caso del escalado, la cantidad de datos de salida es distinta (x2). 
@@ -94,7 +107,10 @@ int main(int argc, char** argv)
         MPI_Bcast(&channels, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&tam, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&datosPP, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
+        if(argv[1] == std::string("1")){
+            MPI_Bcast(&kxk, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&kyk, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        }
         /* Creación de las imagenes de un tamaño de (height/procesadores) filas por procesador.
          * MPI_Scatter: a diferencia de Bcast, separa un mensaje en partes o trozos iguales y las envia individualmente al resto de los procesos y a si mismo.
          */
@@ -105,9 +121,9 @@ int main(int argc, char** argv)
          * Se incluye la aplicación del filtro a las filas faltantes, en caso de que la segmentación excluya height%procesadores filas.
          */
         if(argv[1] == std::string("1")){
-            GaussianBlur(test, test, Size(kxk, kxk), 0);
+            GaussianBlur(test, test, Size(kyk, kyk), 0);
             if(mi_rango == 0 && (height%procesadores != 0)){
-                GaussianBlur(filasFaltantes, filasFaltantes, Size(kxk, kxk), 0);
+                GaussianBlur(filasFaltantes, filasFaltantes, Size(kyk, kyk), 0);
             }
         }
 
@@ -171,7 +187,7 @@ int main(int argc, char** argv)
                 vconcat(output, filasFaltantes, output);
             }
             
-            /* Ya que se utiliza un kernel (KxK), para aplicar el difuminado gaussiano correctamente, se debe trabajar con las (K-1)/2
+            /* Ya que se utiliza un kernel (AxB), para aplicar el difuminado gaussiano correctamente, se debe trabajar con las (B-1)/2
              * siguientes y anteriores a cada fila, es en este caso al ser 15x15, las 7 anteriores y 7 siguientes.
              * Por lo que las primeras 6 y las ultimas 6 filas, necesitan trabajarse por separado
              * (pueden enviarse a cada procesador, sin embargo es mas tedioso y carga extra a cada procesador)
@@ -180,15 +196,15 @@ int main(int argc, char** argv)
              */
             if(procesadores>1 && operacion == std::string("1")){
                 Mat extraGauss;
-                int filasKernel = (kxk-1)/2;
+                int filasKernel = (kyk-1)/2;
                 for(int i=1; i < procesadores; i++){
                     extraGauss = input.row((i*height/procesadores) - (filasKernel*2) - 1);
                     for(int k = (filasKernel*-2 + 2); k < (filasKernel*2); k++){
                         vconcat(extraGauss, input.row((i*height/procesadores) + k), extraGauss);
                     }
-                    GaussianBlur(extraGauss, extraGauss, Size(15,15), 0);
-                    for (int j=0; j<14;j++){
-                        extraGauss.row(j+7).copyTo(output.row(i*height/procesadores +(j-6)));
+                    GaussianBlur(extraGauss, extraGauss, Size(kyk,kyk), 0);
+                    for (int j=0; j<(filasKernel*2);j++){
+                        extraGauss.row(j+filasKernel).copyTo(output.row(i*height/procesadores +(j-(filasKernel-1))));
                     }
                 }
             }
