@@ -169,6 +169,27 @@ int main(int argc, char** argv)
             if(height%procesadores != 0){
                 vconcat(output, filasFaltantes, output);
             }
+            
+            /* Ya que se utiliza un kernel (KxK), para aplicar el difuminado gaussiano correctamente, se debe trabajar con las (K/2 + 1)
+             * siguientes y anteriores a cada fila, es en este caso al ser 15x15, las 7 anteriores y 7 siguientes.
+             * Por lo que las primeras 6 y las ultimas 6 filas, necesitan trabajarse por separado
+             * (pueden enviarse a cada procesador, sin embargo es mas tedioso y carga extra a cada procesador)
+             * de esta forma, el procesador 0 se encarga de arreglar las -6 a +6 filas desde donde inicia a trabajar la imagen cada procesador,
+             * sin incluir el primero y el ultimo dado que es donde comienza y termina cada segmento respectivamente de la original.
+             */
+            if(procesadores>1 && operacion == std::string("1")){
+                Mat extraGauss;
+                for(int i=1; i < procesadores; i++){
+                    extraGauss = input.row((i*height/procesadores) - 13);
+                    for(int k = -12; k < 14; k++){
+                        vconcat(extraGauss, input.row((i*height/procesadores) + k), extraGauss);
+                    }
+                    GaussianBlur(extraGauss, extraGauss, Size(15,15), 0);
+                    for (int j=0; j<14;j++){
+                        extraGauss.row(j+7).copyTo(output.row(i*height/procesadores +(j-6)));
+                    }
+                }
+            }
 
             imwrite(textoSalida, output);
             std:: cout << std::endl <<"Se creo correctamente la imagen: " << textoSalida << std:: endl;
