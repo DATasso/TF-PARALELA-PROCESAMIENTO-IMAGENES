@@ -75,21 +75,32 @@ int main(int argc, char** argv)
 
             /* Para el caso de la difuminación y escala de grises, la cantidad de datos de salida es igual a la de entrada.
              * Se excluyen las faltantes en la distribución y se agregan al final.
-             * Para el caso de la difuminación, se calcula el tamaño del kernel en en x(width) e y(height);
+             * Para el caso de la difuminación, se calcula el tamaño del kernel en en x(width) e y(height)
+             * Para imagenes menores a 300x300, se utiliza un kernel 5x5
             */
             if(argv[1] == std::string("1") || argv[1] == std::string("2")){
                 output = Mat(height - height%procesadores, width, CV_8UC3);
 
                 if(argv[1] == std::string("1")){
-                    kxk = width/50;
-                    kyk = height/50;
-                    if (kxk%2==0){
-                        kxk--;
+                    if(width > 300){
+                        kxk = width/50;
+                        if (kxk%2==0){
+                            kxk--;
+                        }
                     }
-                    if (kyk%2==0){
-                        kyk--;
+                    else{
+                        kxk = 5;
                     }
-                    std::cout << "Se utilizo un kernel de: " << kxk << "x" << kyk << std::endl;
+                    if(height > 300){
+                        kyk = height/50;
+                        if (kyk%2==0){
+                            kyk--;
+                        }
+                    }
+                    else{
+                        kyk = 5;
+                    }
+                    std::cout << "Se utiliza un kernel de tamaño: " << kxk << "x" << kyk << std::endl;
                 }
             }
 
