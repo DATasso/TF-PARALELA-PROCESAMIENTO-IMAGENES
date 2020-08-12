@@ -230,7 +230,7 @@ int main(int argc, char** argv)
                         vconcat(fixResize,input.row(i*height/procesadores +k), fixResize);
                     }
                     resize(fixResize,fixResize,Size(width*2,fixResize.rows *2),INTER_CUBIC);
-                    for(int j=0; j<10; j++){
+                    for(int j=0; j<8; j++){
                         fixResize.row(j+4).copyTo(output.row((i*height/procesadores)*2 + j-4));
                     }
                 }
