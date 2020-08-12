@@ -89,7 +89,7 @@ int main(int argc, char** argv)
                     if (kyk%2==0){
                         kyk--;
                     }
-                    std::cout << "Se utilizo un kernel de: " kxk << "x" << kyk << std::endl;
+                    std::cout << "Se utilizo un kernel de: " << kxk << "x" << kyk << std::endl;
                 }
             }
 
