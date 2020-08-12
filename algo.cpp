@@ -156,9 +156,9 @@ int main(int argc, char** argv)
             Se incluye la aplicación del filtro a las filas faltantes, en caso de que la segmentación excluya height%procesadores filas.
         */
         else if(argv[1] == std::string("3")){
-            resize(test,test,Size(width*2,(height/procesadores)*2));
+            resize(test,test,Size(width*2,(height/procesadores)*2), INTER_CUBIC);
             if(mi_rango == 0 && (height%procesadores != 0)){
-                resize(filasFaltantes,filasFaltantes,Size(width*2,(height%procesadores)*2));
+                resize(filasFaltantes,filasFaltantes,Size(width*2,(height%procesadores)*2),INTER_CUBIC);
             }
         }
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
              * siguientes y anteriores a cada fila, por ejemplo al ser 15x15, las 7 anteriores y 7 siguientes.
              * Por lo que las primeras 7 y las ultimas 7 filas de cada procesador, necesitan trabajarse por separado
              * (pueden enviarse a cada procesador, sin embargo es mas tedioso y carga extra a cada procesador)
-             * de esta forma, el procesador 0 se encarga de arreglar las -7 a +7 filas desde donde inicia a trabajar la imagen cada procesador,
+             * de esta forma, el procesador 0 se encarga de arreglar las -7 a +6 filas desde donde inicia a trabajar la imagen cada procesador,
              * sin incluir el primero y el ultimo dado que es donde comienza y termina cada segmento respectivamente de la original.
              */
             if(procesadores>1 && operacion == std::string("1")){
@@ -216,6 +216,22 @@ int main(int argc, char** argv)
                     GaussianBlur(extraGauss, extraGauss, Size(kyk,kyk), 0);
                     for (int j=0; j<=(filasKernel*2);j++){
                         extraGauss.row(j+filasKernel).copyTo(output.row(i*height/procesadores +(j-filasKernel -2)));
+                    }
+                }
+            }
+            /* De forma similar, como se realiza una interpolación de bicubica (4x4 vecinos pixeles) para ampliar el tamaño de la imagen, se debe trabajar con las
+             * 2 filas anteriores y posteriores a cada fila. Nuevamente el proceso raíz se encarga de esta tarea.
+             */
+            if(procesadores>1 && operacion == std::string("3")){
+                Mat fixResize;
+                for(int i=1; i < procesadores; i++){
+                    fixResize = input.row(i*height/procesadores -4);
+                    for(int k=-3; k<4;k++){
+                        vconcat(fixResize,input.row(i*height/procesadores +k), fixResize);
+                    }
+                    resize(fixResize,fixResize,Size(width*2,fixResize.rows *2),INTER_CUBIC);
+                    for(int j=0; j<10; j++){
+                        fixResize.row(j+4).copyTo(output.row((i*height/procesadores)*2 + j-4));
                     }
                 }
             }
