@@ -199,23 +199,23 @@ int main(int argc, char** argv)
             }
             
             /* Ya que se utiliza un kernel (AxB), para aplicar el difuminado gaussiano correctamente, se debe trabajar con las (B-1)/2
-             * siguientes y anteriores a cada fila, es en este caso al ser 15x15, las 7 anteriores y 7 siguientes.
-             * Por lo que las primeras 6 y las ultimas 6 filas, necesitan trabajarse por separado
+             * siguientes y anteriores a cada fila, por ejemplo al ser 15x15, las 7 anteriores y 7 siguientes.
+             * Por lo que las primeras 7 y las ultimas 7 filas de cada procesador, necesitan trabajarse por separado
              * (pueden enviarse a cada procesador, sin embargo es mas tedioso y carga extra a cada procesador)
-             * de esta forma, el procesador 0 se encarga de arreglar las -6 a +6 filas desde donde inicia a trabajar la imagen cada procesador,
+             * de esta forma, el procesador 0 se encarga de arreglar las -7 a +7 filas desde donde inicia a trabajar la imagen cada procesador,
              * sin incluir el primero y el ultimo dado que es donde comienza y termina cada segmento respectivamente de la original.
              */
             if(procesadores>1 && operacion == std::string("1")){
                 Mat extraGauss;
                 int filasKernel = (kyk-1)/2;
                 for(int i=1; i < procesadores; i++){
-                    extraGauss = input.row((i*height/procesadores) - (filasKernel*2) - 1);
-                    for(int k = (filasKernel*-2 + 2); k < (filasKernel*2); k++){
+                    extraGauss = input.row((i*height/procesadores) - (filasKernel*2));
+                    for(int k = ((filasKernel*-2) -1); k < (filasKernel*2); k++){
                         vconcat(extraGauss, input.row((i*height/procesadores) + k), extraGauss);
                     }
                     GaussianBlur(extraGauss, extraGauss, Size(kyk,kyk), 0);
-                    for (int j=0; j<(filasKernel*2);j++){
-                        extraGauss.row(j+filasKernel).copyTo(output.row(i*height/procesadores +(j-(filasKernel-1))));
+                    for (int j=0; j<=(filasKernel*2);j++){
+                        extraGauss.row(j+filasKernel).copyTo(output.row(i*height/procesadores +(j-filasKernel -2)));
                     }
                 }
             }
