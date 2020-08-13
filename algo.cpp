@@ -76,6 +76,7 @@ int main(int argc, char** argv)
             /* Para el caso de la difuminación y escala de grises, la cantidad de datos de salida es igual a la de entrada.
              * Se excluyen las faltantes en la distribución y se agregan al final.
              * Para el caso de la difuminación, se calcula el tamaño del kernel en en x(width) e y(height)
+             * Basado en una simple regla de 3, para la cual una resolución de 800x800 se utiliza un kernel de 15x15
              * Para imagenes menores a 300x300, se utiliza un kernel 5x5
             */
             if(argv[1] == std::string("1") || argv[1] == std::string("2")){
