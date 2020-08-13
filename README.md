@@ -15,7 +15,13 @@ La implementación debe escoger una imagen en colores y hacer las siguientes act
 - Ubuntu 20.04 LTS de 64 bits.
 - C++.
 - OpenMPI. (https://www-lb.open-mpi.org/software/ompi/v4.0/)
-- OpenCV. (https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/)
+- OpenCV 4.4.0 (funciona con 4.2.0).(https://opencv.org/)
+
+```
+sudo apt update
+sudo apt install libopencv-dev
+sudo ldconfig
+```
 
 ### Archivos
 Archivos de Entrada:
